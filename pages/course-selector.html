@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Course Selector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+
+<div class="flex justify-center items-start min-h-screen py-8">
+  <div class="bg-white p-5 rounded-xl shadow-xl w-full max-w-xl" id="app">
+    <div class="text-center text-gray-500">Loading...</div>
+  </div>
+</div>
+
+<script>
+  // --------- Config ------------
+
+  // Set your API URL or local file path here
+  const API_URL = 'course-details-01.json';
+
+  // --------- State ------------
+  let tree = null;
+  let path = []; // List of node ids from root to current node
+
+  // --------- Utility Functions ------------
+
+  // Given a path of ids, return corresponding list of nodes (for breadcrumbs + navigation)
+  function getNodePath(root, pathArr) {
+    let node = root;
+    let nodes = [node];
+    for (let i = 1; i < pathArr.length; i++) {
+      if (!node.children) break;
+      node = node.children.find(child => child.id === pathArr[i]);
+      if (node) nodes.push(node);
+      else break;
+    }
+    return nodes;
+  }
+
+  function render() {
+    const app = document.getElementById('app');
+    if (!tree) {
+      app.innerHTML = `<div class="text-center text-gray-500">Loading...</div>`;
+      return;
+    }
+
+    const currPathNodes = getNodePath(tree, path);
+    const currNode = currPathNodes[currPathNodes.length-1];
+
+    // Breadcrumbs
+    const breadcrumbs = `
+      <nav class="mb-4 text-sm text-gray-600">
+        <ol class="flex flex-wrap items-center space-x-1">
+          ${currPathNodes.map((node, idx) =>
+            `<li class="flex items-center" ${idx < currPathNodes.length-1 ? "" : "aria-current='page'"}>
+              ${idx>0 ? `<span class="mx-1 text-gray-300">/</span>` : ""}
+              <button
+                ${idx === currPathNodes.length-1 ? "disabled class='font-medium text-black'" : "class='font-medium text-blue-600 hover:underline focus:outline-none'"}
+                data-breadcrumb-idx="${idx}">
+                ${node.name}
+              </button>
+            </li>`).join("")}
+        </ol>
+      </nav>
+    `;
+
+    // Node Content
+    let content = `
+      <div class="mb-6">
+        <div class="text-lg font-medium text-gray-800">${currNode.name}</div>
+        <div class="text-gray-600">${currNode.summary}</div>
+      </div>
+    `;
+
+    if (currNode.type === "Leaf") {
+      // Leaf details
+      content += `
+        <div class="border rounded p-4 bg-blue-50 text-gray-800">
+          <strong>Description:</strong>
+          <p class="mt-2">${currNode.description ? currNode.description : "(No further details provided)."}</p>
+        </div>
+      `;
+    } else {
+      // Option buttons
+      if (currNode.children && currNode.children.length) {
+        content += `
+          <div class="flex flex-col space-y-3">
+            ${currNode.children.map(child => `
+              <button
+                class="w-full p-4 rounded-lg border hover:bg-blue-100 transition text-left shadow-sm focus:outline-none"
+                data-child-id="${child.id}">
+                <div class="font-semibold text-blue-700">${child.name}</div>
+                <div class="text-gray-500">${child.summary}</div>
+              </button>
+            `).join("")}
+          </div>
+        `;
+      } else {
+        content += `<div class="text-gray-400 italic">No further options.</div>`;
+      }
+    }
+
+    app.innerHTML = `
+      <h1 class="text-2xl font-bold mb-2 text-blue-600">Course Selection</h1>
+      ${breadcrumbs}
+      ${content}
+    `;
+
+    // Breadcrumb events
+    document.querySelectorAll('[data-breadcrumb-idx]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(e.currentTarget.getAttribute('data-breadcrumb-idx'));
+        if (idx < currPathNodes.length-1) {
+          path = path.slice(0, idx+1);
+          render();
+        }
+      });
+    });
+
+    // Option click events
+    document.querySelectorAll('[data-child-id]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const nextId = e.currentTarget.getAttribute('data-child-id');
+        path.push(nextId);
+        render();
+      });
+    });
+  }
+
+  // --------- Initial Load ------------
+
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(json => {
+      tree = json;
+      path = [tree.id]; // start from root
+      render();
+    })
+    .catch((err) => {
+      document.getElementById("app").innerHTML = `<div class="text-red-600">Failed to load course tree data.</div>`;
+      console.error(err);
+    });
+
+</script>
+</body>
+</html>

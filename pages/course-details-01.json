@@ -1,0 +1,104 @@
+{
+  "id": "1",
+  "type": "Option",
+  "name": "Root",
+  "summary": "Select your profile to begin course suggestions.",
+  "children": [
+    {
+      "id": "2",
+      "type": "Option",
+      "name": "School Student",
+      "summary": "I am a student in school, from grade 1 to 12.",
+      "children": [
+        {
+          "id": "3",
+          "type": "Option",
+          "name": "Grade 9 to 12",
+          "summary": "Courses suited for grades 9 to 12.",
+          "children": [
+            {
+              "id": "4",
+              "type": "Option",
+              "name": "Robotics",
+              "summary": "Explore robotics courses for high school.",
+              "children": [
+                {
+                  "id": "5",
+                  "type": "Option",
+                  "name": "Course1",
+                  "summary": "Introductory robotics course.",
+                  "children": [
+                    {
+                      "id": "6",
+                      "type": "Leaf",
+                      "name": "Course1 Details",
+                      "summary": "Learn the basics of robotics with practical projects.",
+                      "description": "This course covers introductory concepts in robotics for high school students, including sensors, programming, and basic electronics. By the end, students will have built simple robots and understood foundational principles."
+                    }
+                  ]
+                },
+                {
+                  "id": "7",
+                  "type": "Option",
+                  "name": "Course2",
+                  "summary": "Advanced robotics topics.",
+                  "children": [
+                    {
+                      "id": "8",
+                      "type": "Leaf",
+                      "name": "Course2 Details",
+                      "summary": "Delve into advanced robotics.",
+                      "description": "This course introduces advanced robotics concepts such as machine vision, control systems, and AI integration in robotics for senior school students."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "9",
+              "type": "Option",
+              "name": "Coding",
+              "summary": "Computer programming courses for high school.",
+              "children": []
+            },
+            {
+              "id": "10",
+              "type": "Option",
+              "name": "AI",
+              "summary": "Introduction to Artificial Intelligence courses for high school.",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "type": "Option",
+      "name": "College Student",
+      "summary": "I am currently pursuing a college degree.",
+      "children": []
+    },
+    {
+      "id": "12",
+      "type": "Option",
+      "name": "Fresher",
+      "summary": "I recently graduated and am new to the workforce.",
+      "children": []
+    },
+    {
+      "id": "13",
+      "type": "Option",
+      "name": "Non IT Person",
+      "summary": "I work outside the IT field.",
+      "children": []
+    },
+    {
+      "id": "14",
+      "type": "Option",
+      "name": "IT Working Professional",
+      "summary": "I am currently working in an IT-related field.",
+      "children": []
+    }
+  ]
+}
