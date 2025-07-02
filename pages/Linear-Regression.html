@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linear Regression - Interactive Presentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6b9d 100%);
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            color: #4a5568;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-counter {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        /* Navigation */
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .nav-btn {
+            background: #ff6b9d;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-btn:hover {
+            background: #e55590;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .toc-btn {
+            background: #ff9a56;
+        }
+
+        .toc-btn:hover {
+            background: #e6844a;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        /* Slide */
+        .slide {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 3rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            min-height: 500px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .slide h2 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #ff6b9d;
+            padding-bottom: 0.5rem;
+        }
+
+        .slide h3 {
+            color: #4a5568;
+            font-size: 1.8rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .slide p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            color: #4a5568;
+        }
+
+        .slide ul, .slide ol {
+            font-size: 1.1rem;
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .slide li {
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 1rem;
+        }
+
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        th {
+            background: #fed7d7;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        tr:nth-child(even) {
+            background: #fef5e7;
+        }
+
+        /* Special Elements */
+        .highlight {
+            background: #fff5f5;
+            padding: 1rem;
+            border-left: 4px solid #ff6b9d;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .formula {
+            background: #e6fffa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            text-align: center;
+            margin: 1rem 0;
+            border: 2px solid #4fd1c7;
+        }
+
+        .equation-box {
+            background: #f0fff4;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2d3748;
+            border: 3px solid #68d391;
+            margin: 1.5rem 0;
+        }
+
+        .calculation-box {
+            background: #ebf8ff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #4299e1;
+        }
+
+        .emoji {
+            font-size: 1.5em;
+        }
+
+        /* TOC Modal */
+        .toc-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+        }
+
+        .toc-content {
+            background: white;
+            margin: 5% auto;
+            padding: 2rem;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 15px;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        .toc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+
+        .close-btn {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-item {
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: #f7fafc;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .toc-item:hover {
+            background: #edf2f7;
+            transform: translateX(5px);
+        }
+
+        .toc-item.active {
+            background: #fbb6ce;
+            border-left: 4px solid #ff6b9d;
+        }
+
+        .slide-number {
+            background: #ff6b9d;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.4rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .slide {
+                padding: 1.5rem;
+            }
+
+            .slide h2 {
+                font-size: 2rem;
+            }
+
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .toc-content {
+                width: 95%;
+                margin: 2% auto;
+                padding: 1rem;
+            }
+        }
+
+        /* Interactive Elements */
+        .interactive-box {
+            background: #fff5f5;
+            border: 2px solid #fc8181;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+
+        .answer-reveal {
+            background: #f0fff4;
+            border: 2px solid #68d391;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .reveal-btn {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .business-insight {
+            background: #e6fffa;
+            border: 2px solid #4fd1c7;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+
+        .step-highlight {
+            background: #fef5e7;
+            border-left: 5px solid #f6ad55;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Linear Regression Algorithm - Ice Cream Sales Prediction</h1>
+            <div class="slide-counter">
+                <span id="current-slide">1</span> / <span id="total-slides">24</span>
+            </div>
+            
+            <div class="nav-container">
+                <button class="nav-btn" id="prev-btn" disabled>
+                    ← Previous
+                </button>
+                
+                <button class="nav-btn toc-btn" id="toc-btn">
+                    📋 Table of Contents
+                </button>
+                
+                <button class="nav-btn" id="next-btn">
+                    Next →
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div id="slide-container">
+                <!-- Slides will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TOC Modal -->
+    <div class="toc-modal" id="toc-modal">
+        <div class="toc-content">
+            <div class="toc-header">
+                <h2>Table of Contents</h2>
+                <button class="close-btn" id="close-toc">✕ Close</button>
+            </div>
+            <ul class="toc-list" id="toc-list">
+                <!-- TOC items will be generated here -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Slide data
+        const slides = [
+            {
+                title: "Introduction",
+                content: `
+                    <h2>What is Linear Regression?</h2>
+                    <ul>
+                        <li>A machine learning algorithm that finds the best line through data</li>
+                        <li>Used to predict continuous values (numbers)</li>
+                        <li>Like drawing a trend line to forecast future outcomes</li>
+                    </ul>
+                    <div class="highlight">
+                        <p><strong>Core Concept:</strong> Find relationships between variables to make predictions!</p>
+                    </div>
+                `
+            },
+            {
+                title: "Real-World Scenario",
+                content: `
+                    <h2>The Ice Cream Shop Owner's Challenge <span class="emoji">🍦🌡️</span></h2>
+                    <p><em>Maria owns "Cool Treats" ice cream shop and wants to predict daily sales.</em></p>
+                    
+                    <h3>Available Data:</h3>
+                    <p>Past sales records</p>
+                    <ul>
+                        <li>Daily temperature (°F)</li>
+                        <li>Ice cream cups sold</li>
+                    </ul>
+                    
+                    <div class="highlight">
+                        <p><strong>Question:</strong> "If tomorrow is 77°F, how many cups will I sell?"</p>
+                    </div>
+                    
+                    <div class="business-insight">
+                        <p><strong>Business Impact:</strong> Better inventory, staffing, and revenue planning!</p>
+                    </div>
+                `
+            },
+            {
+                title: "Our Dataset",
+                content: `
+                    <h2>12 Days of Ice Cream Sales Data</h2>
+                    <table>
+                        <tr>
+                            <th>Day</th>
+                            <th>Temperature (°F)</th>
+                            <th>Ice Cream Sales (cups)</th>
+                        </tr>
+                        <tr><td>1</td><td>65</td><td>80</td></tr>
+                        <tr><td>2</td><td>70</td><td>100</td></tr>
+                        <tr><td>3</td><td>72</td><td>110</td></tr>
+                        <tr><td>4</td><td>75</td><td>130</td></tr>
+                        <tr><td>5</td><td>78</td><td>140</td></tr>
+                        <tr><td>6</td><td>80</td><td>160</td></tr>
+                        <tr><td>7</td><td>82</td><td>170</td></tr>
+                        <tr><td>8</td><td>85</td><td>190</td></tr>
+                        <tr><td>9</td><td>88</td><td>200</td></tr>
+                        <tr><td>10</td><td>90</td><td>220</td></tr>
+                        <tr><td>11</td><td>68</td><td>90</td></tr>
+                        <tr><td>12</td><td>86</td><td>195</td></tr>
+                    </table>
+                    
+                    <h3>Pattern Recognition: <span class="emoji">🔍</span></h3>
+                    <ul>
+                        <li>🌡️ Higher temperature → More sales</li>
+                        <li>📈 Clear upward trend</li>
+                        <li>💡 Intuitive relationship!</li>
+                    </ul>
+                `
+            },
+            {
+                title: "Visualizing the Data",
+                content: `
+                    <h2>Temperature vs Sales Relationship</h2>
+                    
+                    <div style="font-family: monospace; font-size: 0.9rem; background: #f7fafc; padding: 2rem; border-radius: 10px; margin: 2rem 0;">
+                        Sales (cups)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;250|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;200|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;•<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;150|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;•<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;100|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;•<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;50|&nbsp;&nbsp;•<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0|________________<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;60&nbsp;&nbsp;70&nbsp;&nbsp;80&nbsp;&nbsp;90 Temperature (°F)
+                    </div>
+                    
+                    <div class="highlight">
+                        <p><strong>What do you see?</strong> <span class="emoji">🤔</span></p>
+                        <ul>
+                            <li>Points roughly follow a straight line</li>
+                            <li>Positive correlation</li>
+                            <li>Some natural variation</li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                title: "The Goal",
+                content: `
+                    <h2>Find the Best-Fit Line</h2>
+                    
+                    <div class="formula">
+                        <p><strong>Mathematical Form:</strong> y = mx + b</p>
+                    </div>
+                    
+                    <h3>Where:</h3>
+                    <ul>
+                        <li><strong>y</strong> = Ice cream sales (what we predict)</li>
+                        <li><strong>x</strong> = Temperature (what we know)</li>
+                        <li><strong>m</strong> = Slope (how much sales change per degree)</li>
+                        <li><strong>b</strong> = Intercept (theoretical sales at 0°F)</li>
+                    </ul>
+                    
+                    <div class="highlight">
+                        <p><strong>Mission:</strong> Find the values of m and b that create the best line! <span class="emoji">🎯</span></p>
+                    </div>
+                `
+            },
+            {
+                title: "Algorithm Steps",
+                content: `
+                    <h2>How Linear Regression Works (4 Steps)</h2>
+                    
+                    <div class="step-highlight">
+                        <h3>1. Calculate Means <span class="emoji">📊</span></h3>
+                        <p>Average temperature and average sales</p>
+                    </div>
+                    
+                    <div class="step-highlight">
+                        <h3>2. Calculate Slope (m) <span class="emoji">📈</span></h3>
+                        <p>How steep should our line be?</p>
+                    </div>
+                    
+                    <div class="step-highlight">
+                        <h3>3. Calculate Intercept (b) <span class="emoji">📍</span></h3>
+                        <p>Where does the line cross the y-axis?</p>
+                    </div>
+                    
+                    <div class="step-highlight">
+                        <h3>4. Make Predictions <span class="emoji">🔮</span></h3>
+                        <p>Use the equation to predict new values</p>
+                    </div>
+                `
+            },
+            {
+                title: "Step 1 - Calculate Means",
+                content: `
+                    <h2>Find the Center Point</h2>
+                    
+                    <div class="calculation-box">
+                        <h3>Mean Temperature (X̄):</h3>
+                        <p>(65+70+72+75+78+80+82+85+88+90+68+86) ÷ 12 = <strong>78.25°F</strong></p>
+                    </div>
+                    
+                    <div class="calculation-box">
+                        <h3>Mean Sales (Ȳ):</h3>
+                        <p>(80+100+110+130+140+160+170+190+200+220+90+195) ÷ 12 = <strong>148.75 cups</strong></p>
+                    </div>
+                    
+                    <div class="highlight">
+                        <p><strong>Center Point:</strong> (78.25°F, 148.75 cups) <span class="emoji">📍</span></p>
+                        <p><em>Our best-fit line will pass through this center point!</em></p>
+                    </div>
+                `
+            },
+            {
+                title: "Step 2 - Slope Formula",
+                content: `
+                    <h2>Calculate Slope (m)</h2>
+                    
+                    <div class="formula">
+                        <p><strong>Slope Formula:</strong></p>
+                        <p>m = Σ[(Xi - X̄)(Yi - Ȳ)] / Σ[(Xi - X̄)²]</p>
+                    </div>
+                    
+                    <h3>Let's calculate one example together:</h3>
+                    <p><strong>Day 1:</strong> Temperature = 65°F, Sales = 80 cups</p>
+                    
+                    <div class="calculation-box">
+                        <ul>
+                            <li>(Xi - X̄) = 65 - 78.25 = <strong>-13.25</strong></li>
+                            <li>(Yi - Ȳ) = 80 - 148.75 = <strong>-68.75</strong></li>
+                            <li>(Xi - X̄)(Yi - Ȳ) = (-13.25) × (-68.75) = <strong>910.94</strong></li>
+                            <li>(Xi - X̄)² = (-13.25)² = <strong>175.56</strong></li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                title: "Interactive Calculation",
+                content: `
+                    <h2>Your Turn! <span class="emoji">🤝</span></h2>
+                    
+                    <p><strong>Day 2:</strong> Temperature = 70°F, Sales = 100 cups</p>
+                    
+                    <div class="interactive-box">
+                        <p><strong>Calculate:</strong></p>
+                        <ul>
+                            <li>(Xi - X̄) = 70 - 78.25 = ?</li>
+                            <li>(Yi - Ȳ) = 100 - 148.75 = ?</li>
+                            <li>(Xi - X̄)(Yi - Ȳ) = ? × ? = ?</li>
+                        </ul>
+                        <button class="reveal-btn" onclick="revealAnswer('answer1')">Show Answer</button>
+                        <div class="answer-reveal" id="answer1">
+                            <p><strong>Answers:</strong></p>
+                            <ul>
+                                <li>(Xi - X̄) = <strong>-8.25</strong></li>
+                                <li>(Yi - Ȳ) = <strong>-48.75</strong></li>
+                                <li>(Xi - X̄)(Yi - Ȳ) = <strong>402.19</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Complete Slope Calculation",
+                content: `
+                    <h2>After calculating for all 12 days:</h2>
+                    
+                    <div class="calculation-box">
+                        <ul>
+                            <li><strong>Σ[(Xi - X̄)(Yi - Ȳ)] = 4,293.78</strong></li>
+                            <li><strong>Σ[(Xi - X̄)²] = 754.42</strong></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="equation-box">
+                        <p>Slope (m) = 4,293.78 ÷ 754.42 = <strong>5.69</strong></p>
+                    </div>
+                    
+                    <div class="highlight">
+                        <p><strong>What does this mean?</strong> <span class="emoji">🤔</span></p>
+                        <p><em>For every 1°F increase in temperature, ice cream sales increase by 5.69 cups!</em></p>
+                    </div>
+                `
+            },
+            {
+                title: "Step 3 - Calculate Intercept",
+                content: `
+                    <h2>Find the Y-Intercept</h2>
+                    
+                    <div class="formula">
+                        <p><strong>Intercept Formula:</strong></p>
+                        <p>b = Ȳ - m × X̄</p>
+                    </div>
+                    
+                    <div class="calculation-box">
+                        <p><strong>Calculation:</strong></p>
+                        <p>b = 148.75 - 5.69 × 78.25</p>
+                        <p>b = 148.75 - 445.24</p>
+                        <p>b = <strong>-296.49</strong></p>
+                    </div>
+                    
+                    <div class="highlight">
+                        <p><strong>What does this mean?</strong> <span class="emoji">🤔</span></p>
+                        <p><em>Theoretical sales at 0°F (not practically meaningful)</em></p>
+                    </div>
+                `
+            },
+            {
+                title: "Our Final Equation",
+                content: `
+                    <h2><span class="emoji">🎉</span> The Best-Fit Line is Found!</h2>
+                    
+                    <div class="equation-box">
+                        <p>Ice Cream Sales = 5.69 × Temperature - 296.49</p>
+                    </div>
+                    
+                    <h3>Example Calculations:</h3>
+                    <div class="calculation-box">
+                        <ul>
+                            <li>At 70°F: Sales = 5.69 × 70 - 296.49 = <strong>102 cups</strong></li>
+                            <li>At 80°F: Sales = 5.69 × 80 - 296.49 = <strong>159 cups</strong></li>
+                            <li>At 90°F: Sales = 5.69 × 90 - 296.49 = <strong>215 cups</strong></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="highlight">
+                        <p><em>Does this make sense?</em> ✅</p>
+                    </div>
+                `
+            },
+            {
+                title: "Step 4 - Make Prediction",
+                content: `
+                    <h2>Tomorrow's Forecast: 77°F <span class="emoji">🌤️</span></h2>
+                    
+                    <div class="calculation-box">
+                        <p><strong>Prediction Calculation:</strong></p>
+                        <p>Sales = 5.69 × 77 - 296.49</p>
+                        <p>Sales = 438.13 - 296.49</p>
+                        <p>Sales = <strong>141.64 cups</strong></p>
+                    </div>
+                    
+                    <div class="business-insight">
+                        <p><strong>Maria's Answer:</strong> <em>"I should prepare about 142 cups for tomorrow!"</em></p>
+                    </div>
+                    
+                    <div class="highlight">
+                        <p><strong>Confidence Check:</strong> This falls right in line with our data pattern! ✅</p>
+                    </div>
+                `
+            },
+            {
+                title: "Testing Different Scenarios",
+                content: `
+                    <h2>What-If Analysis <span class="emoji">🔍</span></h2>
+                    
+                    <table>
+                        <tr>
+                            <th>Temperature</th>
+                            <th>Calculation</th>
+                            <th>Predicted Sales</th>
+                            <th>Scenario</th>
+                        </tr>
+                        <tr><td>60°F</td><td>5.69×60-296.49</td><td><strong>45 cups</strong></td><td>Cold day ❄️</td></tr>
+                        <tr><td>75°F</td><td>5.69×75-296.49</td><td><strong>130 cups</strong></td><td>Nice day ☀️</td></tr>
+                        <tr><td>85°F</td><td>5.69×85-296.49</td><td><strong>187 cups</strong></td><td>Hot day 🔥</td></tr>
+                        <tr><td>95°F</td><td>5.69×95-296.49</td><td><strong>244 cups</strong></td><td>Heat wave 🌡️</td></tr>
+                    </table>
+                    
+                    <div class="interactive-box">
+                        <p><strong>Do these predictions make intuitive sense?</strong> <span class="emoji">🤔</span></p>
+                    </div>
+                `
+            },
+            {
+                title: "Business Applications",
+                content: `
+                    <h2>How Maria Uses This Model <span class="emoji">💼</span></h2>
+                    
+                    <div class="business-insight">
+                        <h3><span class="emoji">📦</span> Inventory Planning:</h3>
+                        <ul>
+                            <li>Monday (73°F forecast) → Order 120 cups</li>
+                            <li>Saturday (89°F forecast) → Order 210 cups</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="business-insight">
+                        <h3><span class="emoji">👥</span> Staffing:</h3>
+                        <ul>
+                            <li>Cool days (65-75°F) → 2 staff members</li>
+                            <li>Hot days (85°F+) → 4 staff members</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="business-insight">
+                        <h3><span class="emoji">💰</span> Revenue Forecasting:</h3>
+                        <ul>
+                            <li>77°F day: 142 cups × $3.50 = <strong>$497</strong></li>
+                            <li>85°F day: 187 cups × $3.50 = <strong>$654.50</strong></li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                title: "Model Limitations",
+                content: `
+                    <h2>What Our Model CAN'T Do <span class="emoji">⚠️</span></h2>
+                    
+                    <h3>❌ Negative Sales Problem:</h3>
+                    <ul>
+                        <li>At 52°F, model predicts 0 sales</li>
+                        <li>Below 52°F, predicts negative sales (impossible!)</li>
+                    </ul>
+                    
+                    <h3>❌ Ignores Other Factors:</h3>
+                    <ul>
+                        <li>Weekends vs weekdays</li>
+                        <li>Holidays and events</li>
+                        <li>Competition nearby</li>
+                        <li>Marketing promotions</li>
+                    </ul>
+                    
+                    <h3>❌ Assumes Linear Relationship:</h3>
+                    <ul>
+                        <li>What if it levels off at very high temperatures?</li>
+                        <li>Real relationships might be curved</li>
+                    </ul>
+                `
+            },
+            {
+                title: "Evaluation Question",
+                content: `
+                    <h2>Quick Check! <span class="emoji">🧠</span></h2>
+                    
+                    <div class="interactive-box">
+                        <p><strong>If the temperature is 83°F, what would our model predict?</strong></p>
+                        <ul>
+                            <li>A) 120 cups</li>
+                            <li>B) 175 cups</li>
+                            <li>C) 200 cups</li>
+                            <li>D) 250 cups</li>
+                        </ul>
+                        <p><strong>Work it out:</strong> Sales = 5.69 × 83 - 296.49 = ?</p>
+                        <button class="reveal-btn" onclick="revealAnswer('answer2')">Show Answer</button>
+                        <div class="answer-reveal" id="answer2">
+                            <p><strong>Answer:</strong> 5.69 × 83 - 296.49 = <strong>175.78 cups</strong></p>
+                            <p>→ <strong>B) 175 cups</strong> ✅</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Pros and Cons",
+                content: `
+                    <h2>Linear Regression Strengths & Limitations</h2>
+                    
+                    <h3>✅ Strengths:</h3>
+                    <ul>
+                        <li>Simple to understand and explain</li>
+                        <li>Fast to calculate</li>
+                        <li>Works well with linear relationships</li>
+                        <li>Provides interpretable coefficients</li>
+                        <li>Good baseline model</li>
+                        <li>No training needed for new predictions</li>
+                    </ul>
+                    
+                    <h3>❌ Limitations:</h3>
+                    <ul>
+                        <li>Only captures linear relationships</li>
+                        <li>Sensitive to outliers</li>
+                        <li>Assumes constant variance</li>
+                        <li>May not work for complex patterns</li>
+                        <li>Can predict impossible values</li>
+                    </ul>
+                `
+            },
+            {
+                title: "Real-World Applications",
+                content: `
+                    <h2>Where is Linear Regression Used?</h2>
+                    
+                    <ul>
+                        <li>🏠 <strong>Real Estate:</strong> House prices vs size</li>
+                        <li>📈 <strong>Finance:</strong> Stock prices vs market indicators</li>
+                        <li>🚗 <strong>Transportation:</strong> Fuel cost vs distance</li>
+                        <li>💊 <strong>Healthcare:</strong> Drug dosage vs patient weight</li>
+                        <li>🌾 <strong>Agriculture:</strong> Crop yield vs fertilizer amount</li>
+                        <li>📚 <strong>Education:</strong> Study time vs test scores</li>
+                        <li>🏭 <strong>Manufacturing:</strong> Production cost vs quantity</li>
+                        <li>🌤️ <strong>Weather:</strong> Energy consumption vs temperature</li>
+                    </ul>
+                    
+                    <div class="highlight">
+                        <p>Linear Regression is one of the most widely used algorithms in data science!</p>
+                    </div>
+                `
+            },
+            {
+                title: "Improving the Model",
+                content: `
+                    <h2>Next Steps for Better Predictions <span class="emoji">🚀</span></h2>
+                    
+                    <h3>Multiple Linear Regression:</h3>
+                    <div class="formula">
+                        <p>Sales = m₁×Temp + m₂×Weekend + m₃×Promotion + b</p>
+                    </div>
+                    <p>Add more variables (day of week, promotions, etc.)</p>
+                    
+                    <h3>Polynomial Regression:</h3>
+                    <div class="formula">
+                        <p>Sales = m₁×Temp + m₂×Temp² + b</p>
+                    </div>
+                    <p>Handle curved relationships</p>
+                    
+                    <h3>Model Validation:</h3>
+                    <ul>
+                        <li>Test on new data</li>
+                        <li>Calculate R-squared (goodness of fit)</li>
+                        <li>Cross-validation techniques</li>
+                    </ul>
+                `
+            },
+            {
+                title: "Interactive Exercise",
+                content: `
+                    <h2>Your Turn! <span class="emoji">🎮</span></h2>
+                    
+                    <h3>Scenario:</h3>
+                    <p>You own a car rental business</p>
+                    
+                    <div class="interactive-box">
+                        <p><strong>Data Pattern:</strong> Daily rentals vs temperature</p>
+                        <ul>
+                            <li>Cold days (40°F): 20 rentals</li>
+                            <li>Hot days (90°F): 80 rentals</li>
+                        </ul>
+                        
+                        <p><strong>Challenge:</strong></p>
+                        <ol>
+                            <li>Estimate the slope</li>
+                            <li>Predict rentals for 70°F</li>
+                            <li>Discuss business implications</li>
+                        </ol>
+                        <p><em>Work in groups - 5 minutes!</em></p>
+                    </div>
+                    
+                    <p><strong>Hint:</strong> slope ≈ (80-20)/(90-40) = ?</p>
+                `
+            },
+            {
+                title: "Key Takeaways",
+                content: `
+                    <h2>Remember These Points:</h2>
+                    
+                    <ol>
+                        <li>📈 <strong>Linear Regression finds the best-fit line</strong> through data</li>
+                        <li>🧮 <strong>Formula: y = mx + b</strong> (slope and intercept)</li>
+                        <li>📊 <strong>Slope tells us rate of change</strong> (5.69 cups per degree)</li>
+                        <li>🎯 <strong>Great for prediction</strong> and understanding relationships</li>
+                        <li>⚠️ <strong>Has limitations</strong> - assumes linear relationships</li>
+                        <li>💼 <strong>Powerful business tool</strong> for planning and forecasting</li>
+                    </ol>
+                    
+                    <div class="highlight">
+                        <p><strong>Most Important:</strong> Linear relationships are everywhere in business and science!</p>
+                    </div>
+                `
+            },
+            {
+                title: "From Algorithm to Code",
+                content: `
+                    <h2>Next Steps <span class="emoji">💻</span></h2>
+                    
+                    <div class="step-highlight">
+                        <p><strong>Today:</strong> Manual calculation with 12 data points</p>
+                        <p><strong>Next Class:</strong> Python implementation with thousands of data points</p>
+                    </div>
+                    
+                    <h3>Libraries we'll use:</h3>
+                    <ul>
+                        <li><code>scikit-learn</code> for Linear Regression</li>
+                        <li><code>matplotlib</code> for visualization</li>
+                        <li><code>pandas</code> for data handling</li>
+                        <li><code>numpy</code> for mathematical operations</li>
+                    </ul>
+                    
+                    <div class="business-insight">
+                        <p><strong>Homework:</strong> Find a real dataset and identify potential linear relationships!</p>
+                    </div>
+                `
+            },
+            {
+                title: "Summary",
+                content: `
+                    <h2>What We Learned Today <span class="emoji">📚</span></h2>
+                    
+                    <ul>
+                        <li>✅ Linear Regression concept and intuition</li>
+                        <li>✅ Manual calculation of slope and intercept</li>
+                        <li>✅ Making predictions with the equation</li>
+                        <li>✅ Business applications and decision making</li>
+                        <li>✅ Model limitations and improvements</li>
+                        <li>✅ Real-world use cases</li>
+                    </ul>
+                    
+                    <div class="equation-box">
+                        <p>You can now predict ice cream sales like a data scientist! <span class="emoji">🍦📊</span></p>
+                    </div>
+                    
+                    <h3>Questions?</h3>
+                    <p>Feel free to ask about any part of the algorithm!</p>
+                `
+            }
+        ];
+
+        // Current slide index
+        let currentSlide = 0;
+
+        // DOM elements
+        const slideContainer = document.getElementById('slide-container');
+        const currentSlideSpan = document.getElementById('current-slide');
+        const totalSlidesSpan = document.getElementById('total-slides');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const tocBtn = document.getElementById('toc-btn');
+        const tocModal = document.getElementById('toc-modal');
+        const closeTocBtn = document.getElementById('close-toc');
+        const tocList = document.getElementById('toc-list');
+
+        // Initialize
+        function init() {
+            totalSlidesSpan.textContent = slides.length;
+            generateTOC();
+            showSlide(0);
+        }
+
+        // Generate Table of Contents
+        function generateTOC() {
+            tocList.innerHTML = '';
+            slides.forEach((slide, index) => {
+                const li = document.createElement('li');
+                li.className = 'toc-item';
+                li.innerHTML = `
+                    <span class="slide-number">${index + 1}</span>
+                    <span>${slide.title}</span>
+                `;
+                li.addEventListener('click', () => {
+                    goToSlide(index);
+                    tocModal.style.display = 'none';
+                });
+                tocList.appendChild(li);
+            });
+        }
+
+        // Show specific slide
+        function showSlide(index) {
+            if (index < 0 || index >= slides.length) return;
+            
+            currentSlide = index;
+            slideContainer.innerHTML = `
+                <div class="slide">
+                    ${slides[index].content}
+                </div>
+            `;
+            
+            // Update counter
+            currentSlideSpan.textContent = index + 1;
+            
+            // Update navigation buttons
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === slides.length - 1;
+            
+            // Update TOC active item
+            document.querySelectorAll('.toc-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+        }
+
+        // Navigation functions
+        function goToSlide(index) {
+            showSlide(index);
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                showSlide(currentSlide + 1);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            }
+        }
+
+        // Reveal answer function
+        function revealAnswer(id) {
+            const element = document.getElementById(id);
+            element.style.display = 'block';
+        }
+
+        // Event listeners
+        prevBtn.addEventListener('click', prevSlide);
+        nextBtn.addEventListener('click', nextSlide);
+        tocBtn.addEventListener('click', () => {
+            tocModal.style.display = 'block';
+        });
+        closeTocBtn.addEventListener('click', () => {
+            tocModal.style.display = 'none';
+        });
+
+        // Close modal when clicking outside
+        tocModal.addEventListener('click', (e) => {
+            if (e.target === tocModal) {
+                tocModal.style.display = 'none';
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevSlide();
+            } else if (e.key === 'Escape') {
+                tocModal.style.display = 'none';
+            }
+        });
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
