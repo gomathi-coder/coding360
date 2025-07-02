@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naive Bayes Algorithm - Interactive Presentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            color: #4a5568;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-counter {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        /* Navigation */
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .nav-btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-btn:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .toc-btn {
+            background: #38a169;
+        }
+
+        .toc-btn:hover {
+            background: #2f855a;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        /* Slide */
+        .slide {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 3rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            min-height: 500px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .slide h2 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #4299e1;
+            padding-bottom: 0.5rem;
+        }
+
+        .slide h3 {
+            color: #4a5568;
+            font-size: 1.8rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .slide p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            color: #4a5568;
+        }
+
+        .slide ul, .slide ol {
+            font-size: 1.1rem;
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .slide li {
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 1rem;
+        }
+
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        th {
+            background: #edf2f7;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        tr:nth-child(even) {
+            background: #f7fafc;
+        }
+
+        /* Special Elements */
+        .highlight {
+            background: #fef5e7;
+            padding: 1rem;
+            border-left: 4px solid #f6ad55;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .formula {
+            background: #e6fffa;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .probability-box {
+            background: #f0fff4;
+            border: 2px solid #68d391;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .comparison-table {
+            background: #fef5e7;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .positive-result {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .negative-result {
+            background: #fed7d7;
+            border-left: 4px solid #f56565;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .emoji {
+            font-size: 1.5em;
+        }
+
+        /* TOC Modal */
+        .toc-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+        }
+
+        .toc-content {
+            background: white;
+            margin: 5% auto;
+            padding: 2rem;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 15px;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        .toc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+
+        .close-btn {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-item {
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: #f7fafc;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .toc-item:hover {
+            background: #edf2f7;
+            transform: translateX(5px);
+        }
+
+        .toc-item.active {
+            background: #bee3f8;
+            border-left: 4px solid #4299e1;
+        }
+
+        .slide-number {
+            background: #4299e1;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* Interactive Elements */
+        .interactive-box {
+            background: #fff5f5;
+            border: 2px solid #fc8181;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+
+        .answer-reveal {
+            background: #f0fff4;
+            border: 2px solid #68d391;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .reveal-btn {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.4rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .slide {
+                padding: 1.5rem;
+            }
+
+            .slide h2 {
+                font-size: 2rem;
+            }
+
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .toc-content {
+                width: 95%;
+                margin: 2% auto;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Naive Bayes Algorithm</h1>
+            <div class="slide-counter">
+                <span id="current-slide">1</span> / <span id="total-slides">24</span>
+            </div>
+            
+            <div class="nav-container">
+                <button class="nav-btn" id="prev-btn" disabled>
+                    ← Previous
+                </button>
+                
+                <button class="nav-btn toc-btn" id="toc-btn">
+                    📋 Table of Contents
+                </button>
+                
+                <button class="nav-btn" id="next-btn">
+                    Next →
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div id="slide-container">
+                <!-- Slides will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TOC Modal -->
+    <div class="toc-modal" id="toc-modal">
+        <div class="toc-content">
+            <div class="toc-header">
+                <h2>Table of Contents</h2>
+                <button class="close-btn" id="close-toc">✕ Close</button>
+            </div>
+            <ul class="toc-list" id="toc-list">
+                <!-- TOC items will be generated here -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Slide data
+        const slides = [
+            {
+                title: "Introduction",
+                content: `
+                    <h2>What is Naive Bayes?</h2>
+                    <ul>
+                        <li>A powerful machine learning algorithm based on probability</li>
+                        <li>Uses Bayes' Theorem to make predictions</li>
+                        <li>Like asking "What's the probability this belongs to each category?"</li>
+                    </ul>
+                    <div class="highlight">
+                        <p><strong>Key Idea:</strong> Calculate probabilities for each class and pick the highest!</p>
+                    </div>
+                `
+            },
+            {
+                title: "Real-World Scenario",
+                content: `
+                    <h2>The Movie Critic's Challenge <span class="emoji">🎬</span></h2>
+                    <p><em>Netflix wants to automatically classify movie reviews as Positive or Negative to help users find good movies.</em></p>
+                    
+                    <h3>Available Data:</h3>
+                    <p>Past movie reviews</p>
+                    <ul>
+                        <li>Review text (words used)</li>
+                        <li>Sentiment label (Positive/Negative)</li>
+                    </ul>
+                    
+                    <div class="highlight">
+                        <p><strong>Question:</strong> Can we predict if a new review is positive or negative?</p>
+                    </div>
+                `
+            },
+            {
+                title: "Our Dataset",
+                content: `
+                    <h2>12 Movie Reviews</h2>
+                    <table>
+                        <tr>
+                            <th>Review</th>
+                            <th>Key Words</th>
+                            <th>Sentiment</th>
+                        </tr>
+                        <tr><td>1</td><td>amazing, great</td><td>Positive</td></tr>
+                        <tr><td>2</td><td>terrible, boring</td><td>Negative</td></tr>
+                        <tr><td>3</td><td>excellent, amazing</td><td>Positive</td></tr>
+                        <tr><td>4</td><td>awful, terrible</td><td>Negative</td></tr>
+                        <tr><td>5</td><td>great, excellent</td><td>Positive</td></tr>
+                        <tr><td>6</td><td>boring, bad</td><td>Negative</td></tr>
+                        <tr><td>7</td><td>fantastic, great</td><td>Positive</td></tr>
+                        <tr><td>8</td><td>terrible, awful</td><td>Negative</td></tr>
+                        <tr><td>9</td><td>amazing, excellent</td><td>Positive</td></tr>
+                        <tr><td>10</td><td>boring, terrible</td><td>Negative</td></tr>
+                        <tr><td>11</td><td>great, fantastic</td><td>Positive</td></tr>
+                        <tr><td>12</td><td>bad, awful</td><td>Negative</td></tr>
+                    </table>
+                    
+                    <h3>Pattern Recognition:</h3>
+                    <ul>
+                        <li>😊 "amazing", "great", "excellent" → Usually Positive</li>
+                        <li>😞 "terrible", "boring", "awful" → Usually Negative</li>
+                    </ul>
+                `
+            },
+            {
+                title: "New Review Arrives",
+                content: `
+                    <h2>Meet the Mystery Review <span class="emoji">📝</span></h2>
+                    
+                    <p>A new review comes in:</p>
+                    <div class="highlight">
+                        <p><em><strong>"This movie was great and amazing!"</strong></em></p>
+                    </div>
+                    
+                    <p><strong>Netflix thinks:</strong> <em>"What's the probability this is positive vs negative based on the words used?"</em></p>
+                    
+                    <div class="highlight">
+                        <p>This is exactly what Naive Bayes does! <span class="emoji">🎯</span></p>
+                    </div>
+                `
+            },
+            {
+                title: "Algorithm Steps",
+                content: `
+                    <h2>How Naive Bayes Works (4 Simple Steps)</h2>
+                    
+                    <h3>1. Count Word Frequencies <span class="emoji">📊</span></h3>
+                    <p>How often each word appears in positive/negative reviews</p>
+                    
+                    <h3>2. Calculate Probabilities <span class="emoji">🧮</span></h3>
+                    <p>Convert counts to probabilities</p>
+                    
+                    <h3>3. Apply Bayes' Theorem <span class="emoji">🔬</span></h3>
+                    <p>Calculate probability for each class</p>
+                    
+                    <h3>4. Pick Highest Probability <span class="emoji">🏆</span></h3>
+                    <p>Winner takes all!</p>
+                `
+            },
+            {
+                title: "Word Frequency Count",
+                content: `
+                    <h2>Step 1 - Word Frequency Count</h2>
+                    <h3>Let's Count Words in Our Training Data</h3>
+                    
+                    <div class="positive-result">
+                        <h3>Positive Reviews (6 total):</h3>
+                        <ul>
+                            <li>"amazing": appears <strong>3 times</strong></li>
+                            <li>"great": appears <strong>3 times</strong></li>
+                            <li>"excellent": appears <strong>3 times</strong></li>
+                            <li>"terrible": appears <strong>0 times</strong></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="negative-result">
+                        <h3>Negative Reviews (6 total):</h3>
+                        <ul>
+                            <li>"terrible": appears <strong>3 times</strong></li>
+                            <li>"boring": appears <strong>2 times</strong></li>
+                            <li>"amazing": appears <strong>0 times</strong></li>
+                            <li>"great": appears <strong>0 times</strong></li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                title: "Basic Probabilities",
+                content: `
+                    <h2>Step 2 - Calculate Basic Probabilities</h2>
+                    
+                    <div class="formula">
+                        <p><strong>Prior Probabilities (Class Distribution):</strong></p>
+                        <p>P(Positive) = 6/12 = <strong>50%</strong></p>
+                        <p>P(Negative) = 6/12 = <strong>50%</strong></p>
+                    </div>
+                    
+                    <div class="probability-box">
+                        <p><strong>Word Probabilities in Positive Reviews:</strong></p>
+                        <p>P("amazing"|Positive) = 3/12 = <strong>25%</strong></p>
+                        <p>P("great"|Positive) = 3/12 = <strong>25%</strong></p>
+                    </div>
+                    
+                    <div class="probability-box">
+                        <p><strong>Word Probabilities in Negative Reviews:</strong></p>
+                        <p>P("amazing"|Negative) = 0/12 = <strong>0%</strong> ⚠️</p>
+                        <p>P("great"|Negative) = 0/12 = <strong>0%</strong> ⚠️</p>
+                    </div>
+                    
+                    <p><em>Problem: Zero probabilities!</em></p>
+                `
+            },
+            {
+                title: "Zero Probability Problem",
+                content: `
+                    <h2>Houston, We Have a Problem! <span class="emoji">🚨</span></h2>
+                    
+                    <p>If a word never appears in a class, probability = 0</p>
+                    <p>This makes the entire calculation = 0 (multiplication!)</p>
+                    
+                    <div class="highlight">
+                        <h3>Solution: Laplace Smoothing</h3>
+                        <ul>
+                            <li>Add +1 to every word count</li>
+                            <li>Add vocabulary size to denominator</li>
+                            <li>No more zero probabilities!</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="formula">
+                        <p><strong>Magic Formula:</strong></p>
+                        <p>(Count + 1) / (Total + Vocabulary Size)</p>
+                    </div>
+                `
+            },
+            {
+                title: "Interactive Calculation",
+                content: `
+                    <h2>Let's Apply Smoothing Together!</h2>
+                    
+                    <p><strong>Vocabulary size = 8 words</strong></p>
+                    
+                    <div class="interactive-box">
+                        <p><strong>Your turn to calculate:</strong></p>
+                        <p>P("amazing"|Positive) = (3+1)/(12+8) = ?/?  = ?</p>
+                        <button class="reveal-btn" onclick="revealAnswer('answer1')">Show Answer</button>
+                        <div class="answer-reveal" id="answer1">
+                            <p><strong>Answer:</strong> 4/20 = <strong>0.2 (20%)</strong></p>
+                        </div>
+                    </div>
+                    
+                    <div class="interactive-box">
+                        <p><strong>Now try:</strong></p>
+                        <p>P("amazing"|Negative) = (0+1)/(12+8) = ?/?  = ?</p>
+                        <button class="reveal-btn" onclick="revealAnswer('answer2')">Show Answer</button>
+                        <div class="answer-reveal" id="answer2">
+                            <p><strong>Answer:</strong> 1/20 = <strong>0.05 (5%)</strong></p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Complete Probability Table",
+                content: `
+                    <h2>All Word Probabilities</h2>
+                    
+                    <table>
+                        <tr>
+                            <th>Word</th>
+                            <th>P(Word|Positive)</th>
+                            <th>P(Word|Negative)</th>
+                        </tr>
+                        <tr><td>amazing</td><td><strong>0.20</strong></td><td>0.05</td></tr>
+                        <tr><td>great</td><td><strong>0.20</strong></td><td>0.05</td></tr>
+                        <tr><td>excellent</td><td><strong>0.20</strong></td><td>0.05</td></tr>
+                        <tr><td>fantastic</td><td><strong>0.15</strong></td><td>0.05</td></tr>
+                        <tr><td>terrible</td><td>0.05</td><td><strong>0.20</strong></td></tr>
+                        <tr><td>boring</td><td>0.05</td><td><strong>0.15</strong></td></tr>
+                        <tr><td>awful</td><td>0.05</td><td><strong>0.20</strong></td></tr>
+                        <tr><td>bad</td><td>0.05</td><td><strong>0.15</strong></td></tr>
+                    </table>
+                    
+                    <div class="highlight">
+                        <p><strong>Notice:</strong> Positive words have high probability in positive class!</p>
+                    </div>
+                `
+            },
+            {
+                title: "Apply Bayes Theorem",
+                content: `
+                    <h2>Step 3 - Apply Bayes' Theorem</h2>
+                    <h3>Classifying "great amazing"</h3>
+                    
+                    <div class="probability-box">
+                        <p><strong>For Positive:</strong></p>
+                        <p>P(Positive|"great amazing") = P("great"|Positive) × P("amazing"|Positive) × P(Positive)</p>
+                        <p>= 0.20 × 0.20 × 0.50 = <strong>0.02</strong></p>
+                    </div>
+                    
+                    <div class="probability-box">
+                        <p><strong>For Negative:</strong></p>
+                        <p>P(Negative|"great amazing") = P("great"|Negative) × P("amazing"|Negative) × P(Negative)</p>
+                        <p>= 0.05 × 0.05 × 0.50 = <strong>0.00125</strong></p>
+                    </div>
+                `
+            },
+            {
+                title: "Make Prediction",
+                content: `
+                    <h2>Step 4 - Make Prediction</h2>
+                    <h3>Compare Probabilities</h3>
+                    
+                    <table>
+                        <tr>
+                            <th>Class</th>
+                            <th>Probability</th>
+                            <th>Winner?</th>
+                        </tr>
+                        <tr style="background: #f0fff4;"><td>Positive</td><td><strong>0.020</strong></td><td>🏆</td></tr>
+                        <tr><td>Negative</td><td>0.00125</td><td></td></tr>
+                    </table>
+                    
+                    <div class="positive-result">
+                        <p><strong>Prediction: POSITIVE</strong> <span class="emoji">😊</span></p>
+                        <p><strong>Confidence: 0.02/(0.02+0.00125) = 94.1%</strong></p>
+                    </div>
+                    
+                    <div class="highlight">
+                        <p><strong>Why it works:</strong> Both "great" and "amazing" are much more likely in positive reviews!</p>
+                    </div>
+                `
+            },
+            {
+                title: "Negative Example",
+                content: `
+                    <h2>Let's Try a Negative Example</h2>
+                    <h3>New Review: "terrible boring"</h3>
+                    
+                    <div class="interactive-box">
+                        <p><strong>Quick Question:</strong> What do you expect?</p>
+                        <ul>
+                            <li>A) Definitely Positive</li>
+                            <li>B) Definitely Negative</li>
+                            <li>C) Could go either way</li>
+                        </ul>
+                        <button class="reveal-btn" onclick="revealAnswer('answer3')">Show Answer</button>
+                        <div class="answer-reveal" id="answer3">
+                            <p><strong>Answer:</strong> B) Definitely Negative - Let's calculate to confirm!</p>
+                        </div>
+                    </div>
+                    
+                    <p><strong>Let's calculate together!</strong></p>
+                `
+            },
+            {
+                title: "Negative Example Results",
+                content: `
+                    <h2>Classifying "terrible boring"</h2>
+                    
+                    <div class="probability-box">
+                        <p><strong>For Positive:</strong></p>
+                        <p>P(Positive|"terrible boring") = 0.05 × 0.05 × 0.50 = <strong>0.00125</strong></p>
+                    </div>
+                    
+                    <div class="probability-box">
+                        <p><strong>For Negative:</strong></p>
+                        <p>P(Negative|"terrible boring") = 0.20 × 0.15 × 0.50 = <strong>0.015</strong></p>
+                    </div>
+                    
+                    <table>
+                        <tr>
+                            <th>Class</th>
+                            <th>Probability</th>
+                            <th>Winner?</th>
+                        </tr>
+                        <tr><td>Positive</td><td>0.00125</td><td></td></tr>
+                        <tr style="background: #fed7d7;"><td>Negative</td><td><strong>0.015</strong></td><td>🏆</td></tr>
+                    </table>
+                    
+                    <div class="negative-result">
+                        <p><strong>Prediction: NEGATIVE</strong> <span class="emoji">😞</span></p>
+                        <p><strong>Confidence: 92.3%</strong></p>
+                    </div>
+                `
+            },
+            {
+                title: "Confusing Case",
+                content: `
+                    <h2>What About Mixed Reviews?</h2>
+                    
+                    <h3>New Review: "great terrible" <span class="emoji">🤔</span></h3>
+                    <p><em>One positive word, one negative word</em></p>
+                    
+                    <div class="probability-box">
+                        <p><strong>For Positive:</strong> 0.20 × 0.05 × 0.50 = <strong>0.005</strong></p>
+                        <p><strong>For Negative:</strong> 0.05 × 0.20 × 0.50 = <strong>0.005</strong></p>
+                    </div>
+                    
+                    <div class="comparison-table">
+                        <h3>Result: TIE! <span class="emoji">🤝</span></h3>
+                        <p>Both classes have equal probability (0.005)</p>
+                    </div>
+                    
+                    <div class="highlight">
+                        <p><strong>This shows the algorithm's uncertainty with conflicting signals!</strong></p>
+                    </div>
+                `
+            },
+            {
+                title: "Results Summary",
+                content: `
+                    <h2>All Our Test Cases</h2>
+                    
+                    <table>
+                        <tr>
+                            <th>Review</th>
+                            <th>Positive Prob</th>
+                            <th>Negative Prob</th>
+                            <th>Prediction</th>
+                            <th>Confidence</th>
+                        </tr>
+                        <tr style="background: #f0fff4;"><td>"great amazing"</td><td><strong>0.020</strong></td><td>0.00125</td><td>Positive</td><td>94.1%</td></tr>
+                        <tr style="background: #fed7d7;"><td>"terrible boring"</td><td>0.00125</td><td><strong>0.015</strong></td><td>Negative</td><td>92.3%</td></tr>
+                        <tr style="background: #fef5e7;"><td>"great terrible"</td><td>0.005</td><td>0.005</td><td><strong>TIE</strong></td><td>50.0%</td></tr>
+                    </table>
+                    
+                    <div class="highlight">
+                        <p><strong>Pattern:</strong> Clear sentiment → High confidence, Mixed sentiment → Low confidence</p>
+                    </div>
+                `
+            },
+            {
+                title: "Why Naive",
+                content: `
+                    <h2>Why "Naive"? <span class="emoji">🤓</span></h2>
+                    
+                    <div class="highlight">
+                        <h3>The Independence Assumption</h3>
+                        <p><strong>Naive Bayes assumes:</strong></p>
+                        <ul>
+                            <li>Words are <strong>independent</strong> of each other</li>
+                            <li>"great" and "amazing" don't influence each other</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="comparison-table">
+                        <h3>Reality:</h3>
+                        <ul>
+                            <li>Words often relate to each other</li>
+                            <li>"not great" vs "great" - context matters!</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="positive-result">
+                        <p><strong>But it works anyway!</strong> <span class="emoji">🎉</span></p>
+                        <p><em>Simple assumptions often lead to powerful results</em></p>
+                    </div>
+                `
+            },
+            {
+                title: "Pros and Cons",
+                content: `
+                    <h2>Naive Bayes Strengths & Weaknesses</h2>
+                    
+                    <h3>Strengths ✅</h3>
+                    <ul>
+                        <li>Fast and simple</li>
+                        <li>Works well with small datasets</li>
+                        <li>Great for text classification</li>
+                        <li>Handles multiple classes easily</li>
+                        <li>Provides probability estimates</li>
+                    </ul>
+                    
+                    <h3>Weaknesses ❌</h3>
+                    <ul>
+                        <li>Assumes feature independence</li>
+                        <li>Sensitive to irrelevant features</li>
+                        <li>Can be overconfident</li>
+                        <li>Struggles with unseen word combinations</li>
+                        <li>Needs smoothing for zero probabilities</li>
+                    </ul>
+                `
+            },
+            {
+                title: "Real-World Applications",
+                content: `
+                    <h2>Where is Naive Bayes Used?</h2>
+                    
+                    <ul>
+                        <li>📧 <strong>Email:</strong> Spam vs Ham detection</li>
+                        <li>🐦 <strong>Social Media:</strong> Sentiment analysis of tweets</li>
+                        <li>📰 <strong>News:</strong> Automatic article categorization</li>
+                        <li>🔍 <strong>Search:</strong> Document classification</li>
+                        <li>🏥 <strong>Medical:</strong> Disease diagnosis based on symptoms</li>
+                        <li>📱 <strong>Apps:</strong> Language detection</li>
+                        <li>🛒 <strong>E-commerce:</strong> Product review classification</li>
+                        <li>🎵 <strong>Music:</strong> Genre classification</li>
+                    </ul>
+                    
+                    <div class="highlight">
+                        <p>Naive Bayes is everywhere in text processing!</p>
+                    </div>
+                `
+            },
+            {
+                title: "Interactive Exercise",
+                content: `
+                    <h2>Your Turn! <span class="emoji">🎮</span></h2>
+                    
+                    <h3>New Review to Classify:</h3>
+                    <p><em>"This movie was fantastic and excellent"</em></p>
+                    
+                    <div class="interactive-box">
+                        <p><strong>Challenge:</strong></p>
+                        <ol>
+                            <li>Look up word probabilities from our table</li>
+                            <li>Calculate P(Positive|review) and P(Negative|review)</li>
+                            <li>Make prediction</li>
+                            <li>Calculate confidence</li>
+                        </ol>
+                        <p><em>Work in pairs - 5 minutes!</em></p>
+                        
+                        <p><strong>Hint:</strong> P("fantastic"|Positive) = 0.15, P("excellent"|Positive) = 0.20</p>
+                    </div>
+                `
+            },
+            {
+                title: "Exercise Solution",
+                content: `
+                    <h2>"fantastic excellent" Classification</h2>
+                    
+                    <div class="probability-box">
+                        <p><strong>For Positive:</strong></p>
+                        <p>P(Positive|"fantastic excellent") = 0.15 × 0.20 × 0.50 = <strong>0.015</strong></p>
+                    </div>
+                    
+                    <div class="probability-box">
+                        <p><strong>For Negative:</strong></p>
+                        <p>P(Negative|"fantastic excellent") = 0.05 × 0.05 × 0.50 = <strong>0.00125</strong></p>
+                    </div>
+                    
+                    <div class="positive-result">
+                        <p><strong>Prediction: POSITIVE</strong> <span class="emoji">😊</span></p>
+                        <p><strong>Confidence: 0.015/(0.015+0.00125) = 92.3%</strong></p>
+                    </div>
+                    
+                    <p><em>Great job! The algorithm correctly identifies positive sentiment!</em></p>
+                `
+            },
+            {
+                title: "Key Takeaways",
+                content: `
+                    <h2>Remember These Points:</h2>
+                    
+                    <ol>
+                        <li>📊 <strong>Naive Bayes uses probabilities</strong> to classify</li>
+                        <li>🔢 <strong>Bayes' Theorem</strong> combines evidence from multiple features</li>
+                        <li>🎯 <strong>Laplace smoothing</strong> prevents zero probability problems</li>
+                        <li>🤝 <strong>"Naive" independence assumption</strong> often works despite being unrealistic</li>
+                        <li>📝 <strong>Excellent for text classification</strong> and sentiment analysis</li>
+                        <li>⚖️ <strong>Conflicting evidence</strong> leads to uncertainty</li>
+                    </ol>
+                    
+                    <div class="highlight">
+                        <p><strong>Most Important:</strong> Multiply probabilities of features to classify!</p>
+                    </div>
+                `
+            },
+            {
+                title: "Summary",
+                content: `
+                    <h2>What We Learned Today <span class="emoji">📚</span></h2>
+                    
+                    <ul>
+                        <li>✅ Naive Bayes algorithm concept and steps</li>
+                        <li>✅ Bayes' Theorem application</li>
+                        <li>✅ Laplace smoothing technique</li>
+                        <li>✅ Word probability calculations</li>
+                        <li>✅ Handling conflicting evidence</li>
+                        <li>✅ Real-world applications</li>
+                    </ul>
+                    
+                    <div class="highlight">
+                        <p><strong>Next Steps:</strong> Try implementing Naive Bayes in code! <span class="emoji">💻</span></p>
+                        <p>Practice with different text datasets and see how it performs.</p>
+                    </div>
+                    
+                    <h3>Questions?</h3>
+                    <p>Feel free to ask about any part of the algorithm!</p>
+                `
+            }
+        ];
+
+        // Current slide index
+        let currentSlide = 0;
+
+        // DOM elements
+        const slideContainer = document.getElementById('slide-container');
+        const currentSlideSpan = document.getElementById('current-slide');
+        const totalSlidesSpan = document.getElementById('total-slides');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const tocBtn = document.getElementById('toc-btn');
+        const tocModal = document.getElementById('toc-modal');
+        const closeTocBtn = document.getElementById('close-toc');
+        const tocList = document.getElementById('toc-list');
+
+        // Initialize
+        function init() {
+            totalSlidesSpan.textContent = slides.length;
+            generateTOC();
+            showSlide(0);
+        }
+
+        // Generate Table of Contents
+        function generateTOC() {
+            tocList.innerHTML = '';
+            slides.forEach((slide, index) => {
+                const li = document.createElement('li');
+                li.className = 'toc-item';
+                li.innerHTML = `
+                    <span class="slide-number">${index + 1}</span>
+                    <span>${slide.title}</span>
+                `;
+                li.addEventListener('click', () => {
+                    goToSlide(index);
+                    tocModal.style.display = 'none';
+                });
+                tocList.appendChild(li);
+            });
+        }
+
+        // Show specific slide
+        function showSlide(index) {
+            if (index < 0 || index >= slides.length) return;
+            
+            currentSlide = index;
+            slideContainer.innerHTML = `
+                <div class="slide">
+                    ${slides[index].content}
+                </div>
+            `;
+            
+            // Update counter
+            currentSlideSpan.textContent = index + 1;
+            
+            // Update navigation buttons
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === slides.length - 1;
+            
+            // Update TOC active item
+            document.querySelectorAll('.toc-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+        }
+
+        // Navigation functions
+        function goToSlide(index) {
+            showSlide(index);
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                showSlide(currentSlide + 1);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            }
+        }
+
+        // Reveal answer function
+        function revealAnswer(id) {
+            const element = document.getElementById(id);
+            element.style.display = 'block';
+        }
+
+        // Event listeners
+        prevBtn.addEventListener('click', prevSlide);
+        nextBtn.addEventListener('click', nextSlide);
+        tocBtn.addEventListener('click', () => {
+            tocModal.style.display = 'block';
+        });
+        closeTocBtn.addEventListener('click', () => {
+            tocModal.style.display = 'none';
+        });
+
+        // Close modal when clicking outside
+        tocModal.addEventListener('click', (e) => {
+            if (e.target === tocModal) {
+                tocModal.style.display = 'none';
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevSlide();
+            } else if (e.key === 'Escape') {
+                tocModal.style.display = 'none';
+            }
+        });
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
